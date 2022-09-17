@@ -1,5 +1,6 @@
 ﻿using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Services;
+using Locoom.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,7 +20,7 @@ namespace Locoom.Infrastructure.Authentication
             _jwtSettings = jwtOptions.Value;
         }
 
-        public string GeneratorToken(Guid userId, string firstName, string lastName)
+        public string GeneratorToken(User user)
         {
             var signingCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(
@@ -29,10 +30,10 @@ namespace Locoom.Infrastructure.Authentication
             
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.GivenName, firstName),
-                new Claim(JwtRegisteredClaimNames.FamilyName, lastName),
-                new Claim(JwtRegisteredClaimNames.UniqueName, userId.ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
+                new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var securityToken = new JwtSecurityToken(

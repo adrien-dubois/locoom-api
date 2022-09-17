@@ -1,14 +1,18 @@
 ﻿using Locoom.Application.Common.Interfaces.Authentication;
+using Locoom.Application.Common.Interfaces.Persistence;
+using Locoom.Domain.Entities;
 
 namespace Locoom.Application.Services.Authentication
 {
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly IUserRepository _userRepository;
 
-        public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator)
+        public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
+            _userRepository = userRepository;
         }
 
         public AuthenticationResult Register(
@@ -19,21 +23,31 @@ namespace Locoom.Application.Services.Authentication
         )
         {
 
-            // Check if user already exists
+            // Check if user doesn't exists
 
-            // Create user ( generate unique Id)
+            if(_userRepository.GetUserByEmail(email) is not null)
+            {
+                throw new Exception("Cet e-mail est déjà enregistré avec un utilisateur");
+            }
+
+            // Create user ( generate unique Id) & persist do DB
+
+            var user = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Password = password
+            };
+
+            _userRepository.Add(user);
 
             // Create Jwt Token
 
-            Guid userId = Guid.NewGuid();
-
-            var token = _jwtTokenGenerator.GeneratorToken(userId, firstName, lastName);
+            var token = _jwtTokenGenerator.GeneratorToken(user);
 
             return new AuthenticationResult(
-                userId,
-                firstName,
-                lastName,   
-                email,
+                user,
                 token
             );
         }
@@ -43,12 +57,25 @@ namespace Locoom.Application.Services.Authentication
             string password
         )
         {
+            // 1. Validate user exists
+            if(_userRepository.GetUserByEmail(email) is not User user)
+            {
+                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+            }
+
+            // 2. Validate password is correct
+            if(user.Password != password)
+            {
+                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+            }
+
+            // 3. Create Jwt Token
+            var token = _jwtTokenGenerator.GeneratorToken(user);
+
+
             return new AuthenticationResult(
-                Guid.NewGuid(),
-                "firstName",
-                "lastName",
-                email,
-                "token"
+                user,
+                token
             );
         }
 

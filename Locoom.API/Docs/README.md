@@ -43,6 +43,8 @@ Then initialize the user secret to the API project : `dotnet user-secrets init -
 Set the JwtSettings secret's index first, and second, the value `dotnet user-secrets set --project .\Project.API "JwtSettings:Secret" "super-secret-key-white-umbrella-dev"`
 
 Youcan get the user-secrets' list with `dotnet user-secrets list --project .\Project.API`
+
+
 ### DateTime Provider
 
 *__Application Layer__*
