@@ -67,3 +67,47 @@ public class DateTimeProvider : IDatetimeProvider
     }
 ```
 --> Implement in Dependency injection
+
+## Connexion Database MySql
+
+To connect to you MySql DB, after having entities, create in Project.Infrastructure `DatabaseContext.cs`
+
+Install on both Project.Infrastructure & Project.Api `Microsoft.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.Design`
+And only on Infrastructure `Pomelo.EntityFrameworkCore.MySql`
+
+Then on `DatabaseContext.cs`, you can configure the DbContext, and at the bottom, adding your Entities to share in your DB
+
+```c#
+    public class DatabaseContext : DbContext
+    {
+        public DatabaseContext(DbContextOptions<DatabaseContext> opt) : base(opt)
+        { }
+
+        public DbSet<User> Users { get; set; } = null!;
+    }
+```
+
+Get your `appsettings.json` and add this line to configure your database connexion and edit it with the right infos:
+
+```json
+  "ConnectionStrings":{
+    "ProjectDatabase" : "Server=myServerAddress;Port=1234;Database=myDataBase;Uid=myUsername;Pwd=myPassword;"
+  },
+
+And after, you'll have to configure Database on `Program.cs` in API with this configuration :
+```c#
+    builder.Services.AddDbContextPool<DatabaseContext>(opt =>
+    {
+        var cs = builder.Configuration.GetConnectionString("ProjectDatabase");
+        opt.UseMySql(cs, ServerVersion.AutoDetect(cs), b => b.MigrationsAssembly("Project.API"));
+    });
+```
+
+Launch these commands in PM Console.
+
+1.  To create the migration file : `dotnet ef migrations add init --project .\Project.API`
+2.  To launch the creation of DB and make the first migration ` dotnet ef database update --project .\Project.API`
+
+And for all you new updates of DB, make these two actions : First, create the file, second migrate.
+If you want to abort one migration, before database update, you can type ` dotnet ef migrations remove --project .\Project.API`
+It will delete the last migration file you generated.
