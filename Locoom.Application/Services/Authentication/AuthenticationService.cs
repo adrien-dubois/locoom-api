@@ -25,9 +25,10 @@ namespace Locoom.Application.Services.Authentication
 
             // Create Jwt Token
 
-            var token = _jwtTokenGenerator.GenratorToken(userId, firstName, lastName);
-
             Guid userId = Guid.NewGuid();
+
+            var token = _jwtTokenGenerator.GeneratorToken(userId, firstName, lastName);
+
             return new AuthenticationResult(
                 userId,
                 firstName,
