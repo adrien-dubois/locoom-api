@@ -29,7 +29,7 @@ To access the secret, inject in Program.cs, add builder.Configuration to AddInfr
 install `Microsoft.Extensions.Options.ConfigurationExtensions` & `Microsoft.Extensions.Options`,
 add `ConfigurationManager configuration` to the interface dependencies, and to finish add a new services:
 
-```c#
+```cs
 services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 ```
 
@@ -77,7 +77,7 @@ And only on Infrastructure `Pomelo.EntityFrameworkCore.MySql`
 
 Then on `DatabaseContext.cs`, you can configure the DbContext, and at the bottom, adding your Entities to share in your DB
 
-```c#
+```cs
     public class DatabaseContext : DbContext
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> opt) : base(opt)
@@ -95,7 +95,7 @@ Get your `appsettings.json` and add this line to configure your database connexi
   },
 
 And after, you'll have to configure Database on `Program.cs` in API with this configuration :
-```c#
+```cs
     builder.Services.AddDbContextPool<DatabaseContext>(opt =>
     {
         var cs = builder.Configuration.GetConnectionString("ProjectDatabase");
@@ -111,3 +111,98 @@ Launch these commands in PM Console.
 And for all you new updates of DB, make these two actions : First, create the file, second migrate.
 If you want to abort one migration, before database update, you can type ` dotnet ef migrations remove --project .\Project.API`
 It will delete the last migration file you generated.
+
+## Handling Errors
+
+First of all, install `Error-Or` package into Domain part.
+
+Create Folders `/Common/Errors` in both Domain, Application & API parts. 
+For example if you want to manage Invali credentials when authenticate, create `Errors.Authentication.cs` class into `Domain/Common/Errors`, with this logic :
+
+```cs
+    public static partial class Errors
+    {
+        public static class Authentication
+        {
+
+            public static Error InvalidCredentials => Error.Validation(
+                code: "Auth.InvalidCredentials",
+                description: "Utilisateur et/ou mot de passe incorrect(s)");
+        }
+    }
+}
+```
+
+Create `ProjectProblemDetailsFactory.cs` in API Common/Error folder, and copy/paste ths class from OG aspnetcore project's [GitHub](https://github.com/dotnet/aspnetcore/blob/main/src/Mvc/Mvc.Core/src/Infrastructure/DefaultProblemDetailsFactory.cs)
+with renaming class, and adding missing usings.
+
+Add in **Program.cs** behind addControllers();
+`builder.Services.AddSingleton<ProblemDetailsFactory, LocoomProblemDetailsFactory>();`
+and in the build part, add on top : `app.UseExceptionHandler("/error");`
+
+After this endpoint added, create a new folder into Api/Common : /Http and a new class : `HttpContextItemKeys.cs` with just that :
+```cs
+    public static class HttpContextItemKeys
+    {
+        public const string Errors = "errors";
+    }
+```
+
+
+Then create 2 controllers in API :
+*  ErrorsController
+*  ApiController
+
+#### ErrorsControler.cs
+```cs
+{
+    public class ErrorsController : ControllerBase
+    {
+        [Route("/error")]
+        public IActionResult Error()
+        {
+            Exception? exception = HttpContext.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+
+            return Problem();
+        }
+    }
+}
+```
+
+#### ApiController.cs
+```cs
+{
+    [ApiController]
+    public class ApiController : ControllerBase
+    {
+        protected IActionResult Problem(List<Error> errors)
+        {
+            HttpContext.Items[HttpContextItemKeys.Errors] = errors;
+
+            var firstError = errors[0];
+
+            var statusCode = firstError.Type switch
+            {
+                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.NotFound => StatusCodes.Status404NotFound,
+                _ => StatusCodes.Status500InternalServerError,
+            };
+
+            return Problem(statusCode: statusCode, title: firstError.Description);
+        }
+    }
+}
+```
+In `AuthenticationService.cs`, front of methods with handling errors, add **ErrorOr** and put the name in <> like this :
+`public ErrorOr<AuthenticationResult> Login`
+And then in the error test, the moment to return, return it like this : `return Errors.Authentication.InvalidCredentials;`
+
+In the `AuthenticationController.cs`, change the `:ControllerBase` with `:ApiController`, and return your method like this :
+
+```cs
+return authResult.Match(
+                authResult => Ok(MapAuthResult(authResult)),
+                errors => Problem(errors));
+```
