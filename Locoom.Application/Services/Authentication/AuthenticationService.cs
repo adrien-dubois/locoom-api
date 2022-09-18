@@ -1,4 +1,5 @@
-﻿using Locoom.Application.Common.Interfaces.Authentication;
+﻿using Locoom.Application.Common.Errors;
+using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Persistence;
 using Locoom.Domain.Entities;
 
@@ -27,7 +28,7 @@ namespace Locoom.Application.Services.Authentication
 
             if(_userRepository.GetUserByEmail(email) is not null)
             {
-                throw new Exception("Cet e-mail est déjà enregistré avec un utilisateur");
+                throw new DuplicateEmailException();
             }
 
             // Create user ( generate unique Id) & persist do DB

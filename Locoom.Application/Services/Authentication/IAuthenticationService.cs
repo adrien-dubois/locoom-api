@@ -1,15 +1,17 @@
-﻿namespace Locoom.Application.Services.Authentication
+﻿using OneOf;
+
+namespace Locoom.Application.Services.Authentication
 {
     public interface IAuthenticationService
     {
-        AuthenticationResult Register(
+        OneOf<AuthenticationResult, > Register(
             string firstName,
             string lastName,
             string email,
             string password
         );
 
-        AuthenticationResult Login(
+        OneOf<AuthenticationResult> Login(
             string email,
             string password
         );
