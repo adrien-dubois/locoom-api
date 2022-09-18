@@ -1,17 +1,17 @@
-﻿using OneOf;
+﻿using ErrorOr;
 
 namespace Locoom.Application.Services.Authentication
 {
     public interface IAuthenticationService
     {
-        OneOf<AuthenticationResult, > Register(
+        ErrorOr<AuthenticationResult> Register(
             string firstName,
             string lastName,
             string email,
             string password
         );
 
-        OneOf<AuthenticationResult> Login(
+        ErrorOr<AuthenticationResult> Login(
             string email,
             string password
         );

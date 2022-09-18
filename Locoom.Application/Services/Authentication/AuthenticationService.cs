@@ -1,6 +1,7 @@
-﻿using Locoom.Application.Common.Errors;
+﻿using ErrorOr;
 using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Persistence;
+using Locoom.Domain.Common.Errors;
 using Locoom.Domain.Entities;
 
 namespace Locoom.Application.Services.Authentication
@@ -16,7 +17,7 @@ namespace Locoom.Application.Services.Authentication
             _userRepository = userRepository;
         }
 
-        public AuthenticationResult Register(
+        public ErrorOr<AuthenticationResult> Register(
             string firstName,
             string lastName,
             string email,
@@ -28,7 +29,7 @@ namespace Locoom.Application.Services.Authentication
 
             if(_userRepository.GetUserByEmail(email) is not null)
             {
-                throw new DuplicateEmailException();
+                return Errors.User.DuplicateEmail; 
             }
 
             // Create user ( generate unique Id) & persist do DB
@@ -53,7 +54,7 @@ namespace Locoom.Application.Services.Authentication
             );
         }
 
-        public AuthenticationResult Login(
+        public ErrorOr<AuthenticationResult> Login(
             string email,
             string password
         )
