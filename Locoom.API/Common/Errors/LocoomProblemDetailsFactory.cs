@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using ErrorOr;
+using Locoom.API.Common.Http;
 
-namespace Locoom.API.Errors
+namespace Locoom.API.Common.Errors
 {
     public class LocoomProblemDetailsFactory : ProblemDetailsFactory
     {
@@ -91,7 +93,12 @@ namespace Locoom.API.Errors
                 problemDetails.Extensions["traceId"] = traceId;
             }
 
-            problemDetails.Extensions.Add("customProperty", "customValue");
+            var errors = httpContext?.Items[HttpContextItemKeys.Errors] as List<Error>;
+
+            if (errors is not null)
+            {
+                problemDetails.Extensions.Add("errorCodes", errors.Select(e => e.Code));
+            }
         }
     }
 }

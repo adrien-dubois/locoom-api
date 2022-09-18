@@ -1,4 +1,4 @@
-using Locoom.API.Errors;
+using Locoom.API.Common.Errors;
 using Locoom.Application;
 using Locoom.Infrastructure;
 using Locoom.Infrastructure.Persistance;

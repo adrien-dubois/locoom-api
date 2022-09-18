@@ -62,13 +62,13 @@ namespace Locoom.Application.Services.Authentication
             // 1. Validate user exists
             if(_userRepository.GetUserByEmail(email) is not User user)
             {
-                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+                return Errors.Authentication.InvalidCredentials;
             }
 
             // 2. Validate password is correct
             if(user.Password != password)
             {
-                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+                return Errors.Authentication.InvalidCredentials;
             }
 
             // 3. Create Jwt Token
