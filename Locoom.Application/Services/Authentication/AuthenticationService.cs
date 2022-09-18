@@ -1,5 +1,7 @@
-﻿using Locoom.Application.Common.Interfaces.Authentication;
+﻿using ErrorOr;
+using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Persistence;
+using Locoom.Domain.Common.Errors;
 using Locoom.Domain.Entities;
 
 namespace Locoom.Application.Services.Authentication
@@ -15,7 +17,7 @@ namespace Locoom.Application.Services.Authentication
             _userRepository = userRepository;
         }
 
-        public AuthenticationResult Register(
+        public ErrorOr<AuthenticationResult> Register(
             string firstName,
             string lastName,
             string email,
@@ -27,7 +29,7 @@ namespace Locoom.Application.Services.Authentication
 
             if(_userRepository.GetUserByEmail(email) is not null)
             {
-                throw new Exception("Cet e-mail est déjà enregistré avec un utilisateur");
+                return Errors.User.DuplicateEmail; 
             }
 
             // Create user ( generate unique Id) & persist do DB
@@ -52,7 +54,7 @@ namespace Locoom.Application.Services.Authentication
             );
         }
 
-        public AuthenticationResult Login(
+        public ErrorOr<AuthenticationResult> Login(
             string email,
             string password
         )
@@ -60,13 +62,13 @@ namespace Locoom.Application.Services.Authentication
             // 1. Validate user exists
             if(_userRepository.GetUserByEmail(email) is not User user)
             {
-                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+                return Errors.Authentication.InvalidCredentials;
             }
 
             // 2. Validate password is correct
             if(user.Password != password)
             {
-                throw new Exception("Utilisateur et/ou mot de passe incorrect(s)");
+                return Errors.Authentication.InvalidCredentials;
             }
 
             // 3. Create Jwt Token

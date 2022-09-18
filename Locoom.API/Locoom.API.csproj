@@ -21,4 +21,6 @@
     <ProjectReference Include="..\Locoom.Infrastructure\Locoom.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>
