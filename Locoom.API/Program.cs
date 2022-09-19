@@ -1,19 +1,15 @@
-using Locoom.API.Common.Errors;
+using Locoom.API;
 using Locoom.Application;
 using Locoom.Infrastructure;
 using Locoom.Infrastructure.Persistance;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services
+        .AddPresentation()
         .AddApplication()
         .AddInfrastructure(builder.Configuration);
-
-    builder.Services.AddControllers();
-
-    builder.Services.AddSingleton<ProblemDetailsFactory, LocoomProblemDetailsFactory>();
 
     builder.Services.AddDbContextPool<DatabaseContext>(opt =>
     {
