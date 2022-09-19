@@ -9,12 +9,12 @@ using Locoom.Application.Authentication.Queries.Login;
 
 namespace Locoom.Application.Authentication.Commands.Register
 {
-    public class LoginCommandHandler : IRequestHandler<LoginQuery, ErrorOr<AuthenticationResult>>
+    public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<AuthenticationResult>>
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUserRepository _userRepository;
 
-        public LoginCommandHandler(
+        public LoginQueryHandler(
             IUserRepository userRepository,
             IJwtTokenGenerator jwtTokenGenerator)
         {
@@ -24,6 +24,8 @@ namespace Locoom.Application.Authentication.Commands.Register
 
         public async Task<ErrorOr<AuthenticationResult>> Handle(LoginQuery query, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
+
             if (_userRepository.GetUserByEmail(query.Email) is not User user)
             {
                 return Errors.Authentication.InvalidCredentials;
