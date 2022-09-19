@@ -1,41 +1,39 @@
 ﻿using ErrorOr;
 using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Persistence;
-using Locoom.Application.Services.Authentication.Common;
-using Locoom.Domain.Common.Errors;
+using Locoom.Application.Authentication.Common;
 using Locoom.Domain.Entities;
+using Locoom.Domain.Common.Errors;
+using MediatR;
+using Locoom.Application.Authentication.Queries.Login;
 
-namespace Locoom.Application.Services.Authentication.Queries
+namespace Locoom.Application.Authentication.Commands.Register
 {
-    public class AuthenticationQueryService : IAuthenticationQueryService
+    public class LoginCommandHandler : IRequestHandler<LoginQuery, ErrorOr<AuthenticationResult>>
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUserRepository _userRepository;
 
-        public AuthenticationQueryService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
+        public LoginCommandHandler(
+            IUserRepository userRepository,
+            IJwtTokenGenerator jwtTokenGenerator)
         {
-            _jwtTokenGenerator = jwtTokenGenerator;
             _userRepository = userRepository;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
-        public ErrorOr<AuthenticationResult> Login(
-            string email,
-            string password
-        )
+        public async Task<ErrorOr<AuthenticationResult>> Handle(LoginQuery query, CancellationToken cancellationToken)
         {
-            // 1. Validate user exists
-            if (_userRepository.GetUserByEmail(email) is not User user)
+            if (_userRepository.GetUserByEmail(query.Email) is not User user)
             {
                 return Errors.Authentication.InvalidCredentials;
             }
 
-            // 2. Validate password is correct
-            if (user.Password != password)
+            if (user.Password != query.Password)
             {
                 return Errors.Authentication.InvalidCredentials;
             }
 
-            // 3. Create Jwt Token
             var token = _jwtTokenGenerator.GeneratorToken(user);
 
 
@@ -44,6 +42,7 @@ namespace Locoom.Application.Services.Authentication.Queries
                 token
             );
         }
-
     }
 }
+
+// 12:15

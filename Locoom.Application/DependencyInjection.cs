@@ -1,5 +1,4 @@
-﻿using Locoom.Application.Services.Authentication.Commands;
-using Locoom.Application.Services.Authentication.Queries;
+﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Locoom.Application
@@ -8,8 +7,7 @@ namespace Locoom.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddScoped<IAuthenticationCommandService, AuthenticationCommandService>();
-            services.AddScoped<IAuthenticationQueryService, AuthenticationQueryService>();
+            services.AddMediatR(typeof(DependencyInjection).Assembly);
 
             return services;
         }

@@ -1,4 +1,6 @@
-﻿# .NET 6
+﻿17:50
+
+# .NET 6
 
 ## JWT Token Generator:
 

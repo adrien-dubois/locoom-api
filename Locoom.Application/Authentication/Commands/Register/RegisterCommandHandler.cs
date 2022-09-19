@@ -1,34 +1,29 @@
 ﻿using ErrorOr;
 using Locoom.Application.Common.Interfaces.Authentication;
 using Locoom.Application.Common.Interfaces.Persistence;
-using Locoom.Application.Services.Authentication.Common;
-using Locoom.Domain.Common.Errors;
+using Locoom.Application.Authentication.Common;
 using Locoom.Domain.Entities;
+using Locoom.Domain.Common.Errors;
+using MediatR;
 
-namespace Locoom.Application.Services.Authentication.Commands
+namespace Locoom.Application.Authentication.Commands.Register
 {
-    public class AuthenticationCommandService : IAuthenticationCommandService
+    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResult>>
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUserRepository _userRepository;
 
-        public AuthenticationCommandService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
+        public RegisterCommandHandler(
+            IUserRepository userRepository,
+            IJwtTokenGenerator jwtTokenGenerator)
         {
-            _jwtTokenGenerator = jwtTokenGenerator;
             _userRepository = userRepository;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
-        public ErrorOr<AuthenticationResult> Register(
-            string firstName,
-            string lastName,
-            string email,
-            string password
-        )
+        public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
         {
-
-            // Check if user doesn't exists
-
-            if (_userRepository.GetUserByEmail(email) is not null)
+            if (_userRepository.GetUserByEmail(command.Email) is not null)
             {
                 return Errors.User.DuplicateEmail;
             }
@@ -37,10 +32,10 @@ namespace Locoom.Application.Services.Authentication.Commands
 
             var user = new User
             {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                Password = password
+                FirstName = command.FirstName,
+                LastName = command.LastName,
+                Email = command.Email,
+                Password = command.Password
             };
 
             _userRepository.Add(user);
@@ -54,6 +49,5 @@ namespace Locoom.Application.Services.Authentication.Commands
                 token
             );
         }
-
     }
 }
