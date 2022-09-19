@@ -1,4 +1,5 @@
 using Locoom.API.Common.Errors;
+using Locoom.API.Common.Mapping;
 using Locoom.Application;
 using Locoom.Infrastructure;
 using Locoom.Infrastructure.Persistance;
@@ -9,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services
         .AddApplication()
-        .AddInfrastructure(builder.Configuration);
+        .AddInfrastructure(builder.Configuration)
+        .AddMapping();
 
     builder.Services.AddControllers();
 
