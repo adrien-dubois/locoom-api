@@ -1,5 +1,7 @@
 ﻿using ErrorOr;
-using Locoom.Application.Services.Authentication;
+using Locoom.Application.Services.Authentication.Commands;
+using Locoom.Application.Services.Authentication.Common;
+using Locoom.Application.Services.Authentication.Queries;
 using Locoom.Contracts.Authentication;
 using Locoom.Domain.Common.Errors;
 using Microsoft.AspNetCore.Mvc;
@@ -9,17 +11,22 @@ namespace Locoom.API.Controllers
     [Route("auth")]
     public class AuthenticationController : ApiController
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IAuthenticationCommandService _authenticationCommandService;
+        private readonly IAuthenticationQueryService _authenticationQueryService;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(
+            IAuthenticationQueryService authenticationQueryService, 
+            IAuthenticationCommandService authenticationCommandService)
         {
-            _authenticationService = authenticationService;
+            _authenticationQueryService = authenticationQueryService;
+            _authenticationCommandService = authenticationCommandService;
         }
+
 
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            ErrorOr<AuthenticationResult> authResult = _authenticationService.Register(
+            ErrorOr<AuthenticationResult> authResult = _authenticationCommandService.Register(
                 request.FirstName,
                 request.LastName,
                 request.Email,
@@ -34,7 +41,7 @@ namespace Locoom.API.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            var authResult = _authenticationService.Login(
+            var authResult = _authenticationQueryService.Login(
                 request.Email,
                 request.Password);
 

@@ -206,3 +206,8 @@ return authResult.Match(
                 authResult => Ok(MapAuthResult(authResult)),
                 errors => Problem(errors));
 ```
+
+## CQRS
+
+*  For the methods which are modifying, creating or touching any datas into database, in other things, those methods will be Commands methods.
+*  For the others which are not touching datas, they are Queries methods
