@@ -1,4 +1,4 @@
-﻿18:40
+﻿17:05
 
 # .NET 6
 
@@ -213,3 +213,67 @@ return authResult.Match(
 
 *  For the methods which are modifying, creating or touching any datas into database, in other things, those methods will be Commands methods.
 *  For the others which are not touching datas, they are Queries methods
+
+## Handler Pipeline
+
+First create the pipeline in Application -> Common -> ValidationBehavior.cs
+and a validator file in Application -> Authentication -> Command -> Register -> RegisterCommandValidator.cs
+
+In the validator file, list all errors you can have like this :
+
+```cs
+    public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
+    {
+        public RegisterCommandValidator()
+        {
+            RuleFor(x => x.FirstName).NotEmpty();
+            RuleFor(x => x.LastName).NotEmpty();
+            RuleFor(x => x.Email).NotEmpty();
+            RuleFor(x => x.Password).NotEmpty();
+        }
+    }
+```
+
+Start the Pipeline File, `ValidationBehavior.cs` with the `IPipelineBehavior` from **MediatR** , the command you need, with the ErrorOr result, the all in an Async Task Handle.
+
+Inject the IValidator<RegisterCommand>.
+Then put the validation result before the handler in the pipeline.
+So if there are no validation errors, then we want to invoke our Handler, with `next` parameter
+But if it's invalid, we have a list of validation failures (in the validation result variable), we want to convert them into a list of errors from the **ErroOr** librairy
+and return them instead
+
+```cs
+public class ValidateRegisterCommandBehavior : IPipelineBehavior<RegisterCommand, ErrorOr<AuthenticationResult>>
+    {
+        private readonly IValidator<RegisterCommand> _validator;
+
+        public ValidateRegisterCommandBehavior(IValidator<RegisterCommand> validator)
+        {
+            _validator = validator;
+        }
+
+        public async Task<ErrorOr<AuthenticationResult>> Handle(
+            RegisterCommand request,
+            CancellationToken cancellationToken,
+            RequestHandlerDelegate<ErrorOr<AuthenticationResult>> next)
+        {
+            // Get the validator from request
+            var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+
+            // If no errors, then
+            if(validationResult.IsValid)
+            {
+                // call the handler
+                return await next();
+            }
+
+            // else, list it with ConvertAll which will make Select + ToList, to make a List of Error
+            var errors = validationResult.Errors
+                .ConvertAll(validationFailure => Error.Validation(
+                                            validationFailure.PropertyName,
+                                            validationFailure.ErrorMessage));
+
+            return errors;
+        }
+    }
+```
