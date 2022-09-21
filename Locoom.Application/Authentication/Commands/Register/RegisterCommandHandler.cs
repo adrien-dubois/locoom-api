@@ -37,7 +37,7 @@ namespace Locoom.Application.Authentication.Commands.Register
                 FirstName = command.FirstName,
                 LastName = command.LastName,
                 Email = command.Email,
-                Password = command.Password
+                Password = BCrypt.Net.BCrypt.HashPassword(command.Password)
             };
 
             _userRepository.Add(user);
