@@ -2,6 +2,50 @@
 
 # .NET 6
 
+## Dependencies
+
+*  API :
+    - Mapster
+    - Mapster.DependencyInjection
+    - Microsoft.EntityFrameworkCore
+    - Microsoft.EntityFrameworkCore.Design
+
+*  Application
+    - FluentValidation
+    - FluentValidation.AspNetCore
+    - MediatR
+    - MediatR.Extensions.Microsoft.DependencyInjection
+    - Microsoft.Extensions.DependencyInjection.Abstractions
+
+*  Contracts
+    
+*  Domain
+    - ErrorOr
+
+*  Infrastructure
+    - EntityFramework
+    - Microsoft.AspNetCore.Authentication.JwtBearer
+    - Microsoft.EntityFrameworkCore
+    - Microsoft.EntityFrameworkCore.Design
+    - Microsoft.Extensions.Configuration
+    - Microsoft.Extensions.DependencyInjection.Abstractions
+    - Microsoft.Extensions.Options.ConfigurationExtensions
+    - Pomelo.EntityFrameworkCore.MySql
+    - System.IdentityModel.Tokens.Jwt
+
+## References
+
+*  API :
+    - Application
+    - Contracts
+    - Infrastructure
+
+*  Application
+    - Domain
+
+*  Infrastructure
+    - Application
+
 ## JWT Token Generator:
 
 *__Infrastructure layer__*
