@@ -23,7 +23,7 @@ var app = builder.Build();
     app.UseExceptionHandler("/error");
 
     app.UseAuthentication();
-
+    app.UseAuthorization();
     app.MapControllers();
     app.Run();
 }

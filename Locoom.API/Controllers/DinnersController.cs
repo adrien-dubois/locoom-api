@@ -3,7 +3,6 @@
 namespace Locoom.API.Controllers
 {
     [Route("[controller]")]
-    [ApiController]
     public class DinnersController : ApiController
     {
         [HttpGet]
