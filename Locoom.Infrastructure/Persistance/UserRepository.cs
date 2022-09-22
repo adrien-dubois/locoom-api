@@ -1,4 +1,7 @@
-﻿using Locoom.Application.Common.Interfaces.Persistence;
+﻿using ErrorOr;
+using Locoom.Application.Authentication.Common;
+using Locoom.Application.Common.Interfaces.Persistence;
+using Locoom.Domain.Common.Errors;
 using Locoom.Domain.Entities;
 
 namespace Locoom.Infrastructure.Persistance
@@ -29,5 +32,6 @@ namespace Locoom.Infrastructure.Persistance
         {
             return _context.Users;
         }
+
     }
 }

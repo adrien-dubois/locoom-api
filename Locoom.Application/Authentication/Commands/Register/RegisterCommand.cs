@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 using Locoom.Application.Authentication.Common;
 using MediatR;
+using System.ComponentModel.DataAnnotations;
 
 namespace Locoom.Application.Authentication.Commands.Register
 {
@@ -8,5 +9,6 @@ namespace Locoom.Application.Authentication.Commands.Register
         string FirstName,
         string LastName,
         string Email,
-        string Password) : IRequest<ErrorOr<AuthenticationResult>>;
+        string Password,
+        string PasswordConfirmation) : IRequest<ErrorOr<AuthenticationResult>>;
 }
