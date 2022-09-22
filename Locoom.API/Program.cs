@@ -3,6 +3,7 @@ using Locoom.Application;
 using Locoom.Infrastructure;
 using Locoom.Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -10,6 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
         .AddPresentation()
         .AddApplication()
         .AddInfrastructure(builder.Configuration);
+
+    builder.Services.AddControllers().AddJsonOptions(x =>
+    {
+        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
     builder.Services.AddDbContextPool<DatabaseContext>(opt =>
     {

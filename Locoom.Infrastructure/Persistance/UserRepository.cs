@@ -5,7 +5,7 @@ namespace Locoom.Infrastructure.Persistance
 {
     public class UserRepository : IUserRepository
     {
-        private static readonly List<User> _users = new();
+        //private static readonly List<User> _users = new();
         private readonly DatabaseContext _context;
 
         public UserRepository(DatabaseContext context)
@@ -15,14 +15,19 @@ namespace Locoom.Infrastructure.Persistance
 
         public void Add(User user)
         {
-            _users.Add(user);
-            _context.Add<User>(user);
+            //_users.Add(user);
+            _context.Add(user);
             _context.SaveChanges();
         }
 
         public User? GetUserByEmail(string email)
         {
             return _context.Users.SingleOrDefault(user => user.Email == email);
+        }
+
+        public IEnumerable<User> GetAll()
+        {
+            return _context.Users;
         }
     }
 }
