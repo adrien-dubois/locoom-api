@@ -31,7 +31,8 @@ namespace Locoom.Application.Authentication.Commands.Register
                 return Errors.Authentication.InvalidCredentials;
             }
 
-            if (user.Password != query.Password)
+            // Verify the hash password with BCrypt
+            if(!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
             {
                 return Errors.Authentication.InvalidCredentials;
             }
