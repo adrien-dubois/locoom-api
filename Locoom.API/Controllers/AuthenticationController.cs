@@ -1,55 +1,58 @@
-﻿using Locoom.Application.Services.Authentication;
+﻿using ErrorOr;
+using Locoom.Application.Authentication.Commands.Register;
+using Locoom.Application.Authentication.Common;
+using Locoom.Application.Authentication.Queries.Login;
 using Locoom.Contracts.Authentication;
-using Microsoft.AspNetCore.Http;
+using Locoom.Domain.Common.Errors;
+using MapsterMapper;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Locoom.API.Controllers
 {
-    [ApiController]
     [Route("auth")]
-    public class AuthenticationController : ControllerBase
+    [AllowAnonymous]
+    public class AuthenticationController : ApiController
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly ISender _mediator;
+        private readonly IMapper _mapper;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(ISender mediator, IMapper mapper)
         {
-            _authenticationService = authenticationService;
+            _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterRequest request)
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
-            var authResult = _authenticationService.Register(
-                request.FirstName,
-                request.LastName,
-                request.Email,
-                request.Password);
+            var command = _mapper.Map<RegisterCommand>(request);
 
-            var response = new AuthenticationResponse(
-                authResult.Id,
-                authResult.FirstName,
-                authResult.LastName,
-                authResult.Email,
-                authResult.Token);
+            ErrorOr<AuthenticationResult> authResult = await _mediator.Send(command);
 
-            return Ok(response);
+            return authResult.Match(
+                authResult => Ok(_mapper.Map<AuthenticationResponse>(authResult)),
+                errors => Problem(errors));
         }
 
+
         [HttpPost("login")]
-        public IActionResult Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            var authResult = _authenticationService.Login(
-                request.Email,
-                request.Password);
+            var query = _mapper.Map<LoginQuery>(request);
+            var authResult = await _mediator.Send(query);
 
-            var response = new AuthenticationResponse(
-                authResult.Id,
-                authResult.FirstName,
-                authResult.LastName,
-                authResult.Email,
-                authResult.Token);
+            if (authResult.IsError && authResult.FirstError == Errors.Authentication.InvalidCredentials)
+            {
+                return Problem(
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    title: authResult.FirstError.Description);
+            }
 
-            return Ok(response);
+            return authResult.Match(
+                authResult => Ok(_mapper.Map<AuthenticationResponse>(authResult)),
+                errors => Problem(errors));
         }
     }
 }
